@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Game Room</title>
+
+    <script
+      src="https://code.jquery.com/jquery-3.7.1.slim.min.js"
+      integrity="sha256-kmHvs0B+OpCW5GVHUNjv9rOmY0IvSIRcf7zGUDTDQM8="
+      crossorigin="anonymous"></script>
+
+    <script src="https://cdn.socket.io/4.7.5/socket.io.min.js" integrity="sha384-2huaZvOR9iDzHqslqwpR87isEmrfxqyWOF7hr7BY6KG0+hVKLoEXMPUJw3ynWuhO" crossorigin="anonymous"></script>
+
+</head>
+<body>
+    <script>
+        const SERVER_IP = "{{ websocket_connection_url }}";
+    </script>
+
+    <div id="waiting-info">
+        <span id="num-players"></span> players connected
+        <script src="{{ url_for('static', filename='game_room/game_room.js') }}"></script>
+        <button id="start">Start</button>
+    </div>
+
+    <span>Countdown: <span id="countdown"></span></span>
+
+    <div id="question-prompt">
+        <label for="question-input">Enter your Question</label><input type="text" id="question-input"/>
+        <button id="submit-question">Submit</button>
+    </div>
+
+    <div id="answer-question">
+        <span>Question: <span id="question"></span></span><br>
+
+        <label for="question-response">Enter your Response</label><input type="text" id="question-response"/>
+        <button id="submit-question-response">Submit Response</button>
+
+    </div>
+
+    <div id="vote">
+        <span id="last-question"></span>
+
+        <div id="player-responses">
+            <span class="player-response">
+                Player 1
+                <span class="player-response">
+                    Response: <span class="response">abc</span>
+                </span>
+                <button class="vote-button" id="vote-player-1">Vote</button>
+            </span>
+        </div>
+    </div>
+
+    <div id="results">
+        <span>The AI was player <span id="ai-player-reveal"></span></span>
+
+        <div id="leaderboard">
+
+        </div>
+    </div>
+</body>
+</html>
