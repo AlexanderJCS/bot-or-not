@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Bot or Not</title>
+
+    <script
+      src="https://code.jquery.com/jquery-3.7.1.slim.min.js"
+      integrity="sha256-kmHvs0B+OpCW5GVHUNjv9rOmY0IvSIRcf7zGUDTDQM8="
+      crossorigin="anonymous"></script>
+</head>
+<body>
+    <h1>Bot or Not</h1>
+    <label for="name">Name: </label><input type="text" id="name"/>
+    <br>
+    <button id="create-game">Create Game</button>
+    <br>
+    <label for="room-id">Room ID (to join): </label><input type="text" id="room-id"/>
+    <button id="join-room">Join Room</button>
+
+    <script src="{{ url_for('static', filename='index/index.js') }}"></script>
+</body>
+</html>
