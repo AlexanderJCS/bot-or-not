@@ -5,6 +5,10 @@ from bidict import bidict
 import flask_socketio as sio
 
 import time
+import ollama
+
+import config
+import threading
 
 
 class GameState(Enum):
@@ -53,6 +57,15 @@ class Game:
     def add_vote(self, sid: str, vote: int):
         self.votes[sid] = vote
     
+    def _gen_ai_response(self, question: str):
+        # Intended to be run on another thread
+        ai_output = ollama.generate(
+            model="llama3.1:8b",
+            prompt=config.PROMPT.replace("{{QUESTION}}", question)
+        )
+        
+        self.add_response("ai", ai_output["response"])
+    
     def _collect_responses(self):
         player_id_and_response = [
             (self.sid_to_player_id[sid], response)
@@ -74,18 +87,25 @@ class Game:
         question_prompt_time = 30
         
         self._emit_all("question-prompt", question_prompt_time)
-        while question_prompt_time > 0 and len(self.questions) != len(self.players):
+        while question_prompt_time > 0 and len(self.questions) < len(self.players_reminaing):
             question_prompt_time -= 1
             time.sleep(1)
+
+        self.add_player("ai")
 
         while len(self.questions) > 0:
             self.state = GameState.ANSWER_QUESTION
             answer_time = 30
             self.responses = {}
-            self._emit_all("answer-question", answer_time, self._get_question())
-            while answer_time > 0 and len(self.responses) != len(self.players_reminaing):
+            question = self._get_question()
+            self._emit_all("answer-question", answer_time, question)
+            
+            ai_response_thread = threading.Thread(target=self._gen_ai_response, args=(question,))
+            ai_response_thread.start()
+            while answer_time > 0 and len(self.responses) < len(self.players_reminaing) + 1:
                 answer_time -= 1
                 time.sleep(1)
+            ai_response_thread.join()
             
             for sid in self.players_reminaing:
                 if sid not in self.responses:
@@ -95,7 +115,7 @@ class Game:
             vote_time = 30
             self._emit_all("vote", vote_time, self._collect_responses())
             self.votes = {}
-            while vote_time > 0 and len(self.votes) != len(self.players_reminaing):
+            while vote_time > 0 and len(self.votes) < len(self.players_reminaing):
                 vote_time -= 1
                 time.sleep(1)
             
