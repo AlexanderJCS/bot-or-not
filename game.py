@@ -1,3 +1,4 @@
+import os
 import random
 from enum import Enum
 from bidict import bidict
@@ -5,10 +6,13 @@ from bidict import bidict
 import flask_socketio as sio
 
 import time
-import ollama
 
 import config
 import threading
+
+from google import genai
+
+client = genai.Client(api_key=os.getenv("GEMINI_KEY"))
 
 
 class GameState(Enum):
@@ -58,13 +62,11 @@ class Game:
         self.votes[sid] = vote
     
     def _gen_ai_response(self, question: str):
-        # Intended to be run on another thread
-        ai_output = ollama.generate(
-            model="llama3.1:8b",
-            prompt=config.PROMPT.replace("{{QUESTION}}", question)
+        response = client.models.generate_content(
+            model="gemini-2.5-flash-preview-04-17", contents=config.PROMPT.replace("{{QUESTION}}", question)
         )
         
-        self.add_response("ai", ai_output["response"])
+        self.add_response("ai", response.text)
     
     def _collect_responses(self):
         player_id_and_response = [
