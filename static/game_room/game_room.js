@@ -41,7 +41,6 @@ function countdown(time, maxTime = maxCountdown) {
 function addPlayerResponse(responseText, playerNumber) {
     const playerResponse = $(`
         <div class="player-response fade-in">
-            <div class="player-id">Player ${playerNumber}</div>
             <div class="response-text">${responseText}</div>
             <button class="vote-button" id="vote-player-${playerNumber}">Vote</button>
         </div>
@@ -113,16 +112,20 @@ function init() {
     socket.on("waiting-room", () => {
         showSection("#waiting-info");
         updateCountdownRing(0); // Reset countdown
+        $("#start").prop("disabled", false).text("Start Game");
     });
 
     socket.on("question-prompt", (time) => {
         showSection("#question-prompt");
         countdown(time, time); // Pass the max time as well
+
+        $("#submit-question").prop("disabled", false).text("Submit Question");
         $("#question-input").focus();
     });
 
     socket.on("answer-question", (time, question) => {
         showSection("#answer-question");
+        $("#submit-question-response").prop("disabled", false).text("Submit Response");
         $("#question").text(question);
         lastQuestion = question;
         countdown(time, time);
@@ -172,6 +175,7 @@ function init() {
 
     $("#submit-question-response").click(() => {
         const response = $("#question-response").val().trim();
+
         if (response) {
             socket.emit("submit-response", response);
             $("#question-response").val("");
@@ -186,15 +190,6 @@ function init() {
         // Visual feedback for vote
         $(".vote-button").prop("disabled", true);
         $(this).text("Voted").addClass("voted");
-    });
-    
-    $("#back-to-waiting").click(() => {
-        socket.emit("restart");
-        showSection("#waiting-info");
-        updateCountdownRing(0);
-        $("#start").prop("disabled", false).text("Start Game");
-        $("#submit-question").prop("disabled", false).text("Submit Question");
-        $("#submit-question-response").prop("disabled", false).text("Submit Response");
     });
     
     // Allow pressing Enter to submit

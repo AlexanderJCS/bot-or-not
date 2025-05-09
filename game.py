@@ -39,6 +39,9 @@ class Game:
     
     def _emit_all(self, event: str, *args):
         for player in self.players:
+            if player == "ai":
+                continue
+            
             sio.emit(event, args, to=player)
             
     def _get_question(self):
@@ -49,6 +52,7 @@ class Game:
         return questions_list[0][1]
     
     def add_question(self, sid: str, question: str):
+        print(f"Received question: {question}")
         self.questions[sid] = question
     
     def add_response(self, sid: str, response: str):
@@ -94,12 +98,12 @@ class Game:
     def run(self):
         self.running = True
 
+        if "ai" not in self.players:
+            self.add_player("ai")
+
         self.questions = {}
         self._emit_all("question-prompt", config.QUESTION_PROMPT_TIME)
         self._wait_response(config.QUESTION_PROMPT_TIME, self.questions)
-
-        if "ai" not in self.players:
-            self.add_player("ai")
 
         while self.questions:
             # Shuffle IDs for every vote so players can't determine the AI one round then vote the same every round
