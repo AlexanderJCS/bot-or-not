@@ -1,0 +1,228 @@
+.game-container {
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.game-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--spacing-lg);
+  padding-bottom: var(--spacing-md);
+  border-bottom: 1px solid #333;
+}
+
+.game-status {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+}
+
+/* Countdown Timer Ring */
+.countdown-container {
+  position: relative;
+  width: 60px;
+  height: 60px;
+}
+
+.countdown-ring {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  background: conic-gradient(var(--primary) 0%, transparent 0%);
+  transform: rotate(-90deg);
+}
+
+.countdown-background {
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: calc(100% - 6px);
+  height: calc(100% - 6px);
+  border-radius: 50%;
+  background-color: var(--card-bg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.countdown-number {
+  transform: rotate(90deg);
+  font-family: var(--font-heading);
+  font-size: 1.4rem;
+  font-weight: bold;
+  color: var(--text-primary);
+}
+
+.section {
+  margin-bottom: var(--spacing-lg);
+  animation: fadeIn 0.5s ease;
+}
+
+#waiting-info {
+  text-align: center;
+  padding: var(--spacing-lg) 0;
+}
+
+.player-count {
+  font-size: 1.2rem;
+  margin-bottom: var(--spacing-lg);
+  color: var(--text-secondary);
+}
+
+.room-code {
+  margin-bottom: var(--spacing-lg);
+  padding: var(--spacing-md);
+  background-color: rgba(187, 134, 252, 0.1);
+  border-radius: var(--border-radius);
+  display: inline-block;
+}
+
+#room-code-display {
+  font-family: var(--font-heading);
+  font-size: 1.4rem;
+  color: var(--primary);
+  letter-spacing: 2px;
+}
+
+.start-button {
+  background-color: var(--primary);
+  padding: 12px 30px;
+  font-size: 1.2rem;
+  border-radius: 30px;
+}
+
+.question-container {
+  background-color: var(--card-bg);
+  border-radius: var(--border-radius);
+  padding: var(--spacing-lg);
+  margin-bottom: var(--spacing-lg);
+}
+
+.question-display {
+  font-family: var(--font-heading);
+  font-size: 1.4rem;
+  margin-bottom: var(--spacing-md);
+  color: var(--secondary);
+  background-color: rgba(3, 218, 198, 0.1);
+  padding: var(--spacing-md);
+  border-radius: var(--border-radius);
+}
+
+.response-area {
+  margin-top: var(--spacing-md);
+}
+
+#player-responses {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: var(--spacing-md);
+  margin-top: var(--spacing-md);
+}
+
+.player-response {
+  background-color: var(--card-bg);
+  border-radius: var(--border-radius);
+  padding: var(--spacing-md);
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+  border: 1px solid #333;
+  transition: all 0.2s ease;
+}
+
+.player-response:hover {
+  border-color: var(--primary);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.player-id {
+  font-family: var(--font-heading);
+  font-weight: bold;
+  color: var(--primary);
+}
+
+.response-text {
+  background-color: rgba(0, 0, 0, 0.2);
+  padding: var(--spacing-sm);
+  border-radius: var(--border-radius);
+  margin-bottom: var(--spacing-sm);
+}
+
+.vote-button {
+  background-color: var(--secondary);
+  margin-top: var(--spacing-sm);
+}
+
+.voted {
+  background-color: var(--success);
+}
+
+#results {
+  text-align: center;
+}
+
+.reveal {
+  font-family: var(--font-heading);
+  font-size: 1.8rem;
+  color: var(--error);
+  margin-bottom: var(--spacing-lg);
+  background-color: rgba(207, 102, 121, 0.1);
+  padding: var(--spacing-md);
+  border-radius: var(--border-radius);
+}
+
+#leaderboard {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+}
+
+.leaderboard-entry {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background-color: var(--card-bg);
+  padding: var(--spacing-md);
+  border-radius: var(--border-radius);
+}
+
+.player-score {
+  font-family: var(--font-heading);
+  font-weight: bold;
+  color: var(--success);
+}
+
+.pulse {
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+  100% { transform: scale(1); }
+}
+
+/* Responsive adjustments */
+@media (max-width: 600px) {
+  .form-row {
+    flex-direction: column;
+  }
+  
+  #player-responses {
+    grid-template-columns: 1fr;
+  }
+  
+  .game-header {
+    flex-direction: column;
+    text-align: center;
+  }
+  
+  .game-header h1 {
+    margin-bottom: var(--spacing-md);
+  }
+}
