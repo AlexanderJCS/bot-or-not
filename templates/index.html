@@ -2,21 +2,55 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Bot or Not</title>
-
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&family=Poppins:wght@500;600;700&family=Quicksand:wght@300..700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/index.css') }}">
     <script
       src="https://code.jquery.com/jquery-3.7.1.slim.min.js"
       integrity="sha256-kmHvs0B+OpCW5GVHUNjv9rOmY0IvSIRcf7zGUDTDQM8="
       crossorigin="anonymous"></script>
 </head>
 <body>
-    <h1>Bot or Not</h1>
-    <label for="name">Name: </label><input type="text" id="name"/>
-    <br>
-    <button id="create-game">Create Game</button>
-    <br>
-    <label for="room-id">Room ID (to join): </label><input type="text" id="room-id"/>
-    <button id="join-room">Join Room</button>
+    <div class="container">
+        <div class="welcome-card">
+            <h1 class="game-title">Bot or Not</h1>
+            <p class="game-description">Can you tell who's human and who's AI? Join a game and put your detection skills to the test!</p>
+            
+            <div class="game-options">
+                <div class="option-card">
+                    <h2>Create New Game</h2>
+                    <p>Start a new game and invite your friends</p>
+                    <div class="form-group">
+                        <label for="name">Your Name</label>
+                        <input type="text" id="name" placeholder="Enter your name">
+                    </div>
+                    <button id="create-game" class="btn-primary">Create Game</button>
+                </div>
+                
+                <div class="form-divider"><span>OR</span></div>
+                
+                <div class="option-card">
+                    <h2>Join Existing Game</h2>
+                    <p>Enter a room code to join an existing game</p>
+                    <div class="form-row">
+                        <div class="form-group" style="flex: 1;">
+                            <label for="room-id">Room ID</label>
+                            <input type="text" id="room-id" placeholder="Enter room code">
+                        </div>
+                        <div class="form-group" style="flex: 1;">
+                            <label for="join-name">Your Name</label>
+                            <input type="text" id="join-name" placeholder="Enter your name">
+                        </div>
+                    </div>
+                    <button id="join-room" class="btn-secondary">Join Game</button>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <script src="{{ url_for('static', filename='index/index.js') }}"></script>
 </body>

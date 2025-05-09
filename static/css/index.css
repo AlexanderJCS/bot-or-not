@@ -1,0 +1,82 @@
+.welcome-card {
+  max-width: 500px;
+  margin: 80px auto 0;
+  text-align: center;
+}
+
+.game-title {
+  font-size: 3rem;
+  margin-bottom: var(--spacing-lg);
+  color: var(--primary);
+  text-shadow: 0 0 10px rgba(187, 134, 252, 0.3);
+}
+
+.game-description {
+  margin-bottom: var(--spacing-lg);
+  color: var(--text-secondary);
+}
+
+.game-options {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+}
+
+.option-card {
+  background-color: var(--card-bg);
+  border-radius: var(--border-radius);
+  padding: var(--spacing-lg);
+  margin-bottom: var(--spacing-md);
+  text-align: left;
+  border: 1px solid #333;
+  transition: all 0.2s ease;
+}
+
+.option-card:hover {
+  border-color: var(--primary);
+  transform: translateY(-2px);
+}
+
+.option-card h2 {
+  color: var(--primary);
+  margin-bottom: var(--spacing-sm);
+}
+
+.form-row {
+  display: flex;
+  gap: var(--spacing-md);
+  margin-bottom: var(--spacing-md);
+}
+
+.form-row input {
+  flex: 1;
+  margin-bottom: 0;
+}
+
+.btn-primary {
+  background-color: var(--primary);
+  width: 100%;
+}
+
+.btn-secondary {
+  background-color: var(--secondary);
+  width: 100%;
+}
+
+.form-divider {
+  display: flex;
+  align-items: center;
+  margin: var(--spacing-lg) 0;
+  color: var(--text-secondary);
+}
+
+.form-divider::before,
+.form-divider::after {
+  content: "";
+  flex: 1;
+  border-bottom: 1px solid #333;
+}
+
+.form-divider span {
+  padding: 0 10px;
+}
