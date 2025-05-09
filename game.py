@@ -31,10 +31,10 @@ class Game:
         self.players: list[str] = []
         self.questions: dict[str, str] = {}  # key: sid, value: question
         self.responses: dict[str, str] = {}  # key: sid, value: response
-        self.votes: dict[str, int] = {}  # key: sid, value: vote
+        self.votes: dict[str, int] = {}  # key: sid, value: the player's vote
         self.sid_to_player_id: bidict[str, int] = bidict()
         self.player_id = 0
-        self.total_votes = {}
+        self.total_votes: [str, int] = {}  # Key: sid, value: accumulated votes for that player
         self.running = False
     
     def _emit_all(self, event: str, *args):
@@ -46,15 +46,12 @@ class Game:
         random.shuffle(questions_list)
         
         del self.questions[questions_list[0][0]]
-        print(f"{questions_list[0][1]=}")
         return questions_list[0][1]
     
     def add_question(self, sid: str, question: str):
-        print(f"Received question {question=}")
         self.questions[sid] = question
     
     def add_response(self, sid: str, response: str):
-        print(f"Received response {response=}")
         self.responses[sid] = response
     
     def add_vote(self, sid: str, vote: int):
@@ -82,11 +79,20 @@ class Game:
         while time.monotonic() - start_time < countdown and len(response_field) < target_players:
             time.sleep(0.1)
     
+    def _shuffle_ids(self):
+        player_sids = list(self.sid_to_player_id.keys())
+        player_ids = list(self.sid_to_player_id.values())
+        
+        random.shuffle(player_ids)
+        
+        # Clear the bidict to avoid duplication errors
+        self.sid_to_player_id.clear()
+        
+        for sid, player_id in zip(player_sids, player_ids):
+            self.sid_to_player_id[sid] = player_id
+    
     def run(self):
         self.running = True
-        
-        for player in self.sid_to_player_id.values():
-            self.total_votes[player] = 0
 
         self.questions = {}
         self._emit_all("question-prompt", config.QUESTION_PROMPT_TIME)
@@ -96,10 +102,15 @@ class Game:
             self.add_player("ai")
 
         while self.questions:
+            # Shuffle IDs for every vote so players can't determine the AI one round then vote the same every round
+            self._shuffle_ids()
+            
+            # Ask question and get responses
             self.responses = {}
             question = self._get_question()
             self._emit_all("answer-question", config.ANSWER_QUESTION_TIME, question)
 
+            # Start thread for AI to answer the question
             ai_response_thread = threading.Thread(target=self._gen_ai_response, args=(question,))
             ai_response_thread.start()
             self._wait_response(config.ANSWER_QUESTION_TIME, self.responses, count_ai=True)
@@ -109,34 +120,28 @@ class Game:
                 if sid not in self.responses:
                     self.responses[sid] = "Player did not respond in time"
 
+            # Vote on the AI
             self._emit_all("vote", config.VOTING_TIME, self._collect_responses())
             self.votes = {}
             self._wait_response(config.VOTING_TIME, self.votes)
 
             # Register votes
-            print("done voting")
-            print(self.votes)
-            print(f"{self.sid_to_player_id=}")
             for sid, vote in self.votes.items():
                 try:
                     vote = int(vote)
-                except ValueError:
-                    print("Invalid vote")
+                except ValueError:  # Invalid vote
                     continue
 
-                if self.sid_to_player_id[sid] == vote:
-                    # Cannot vote for yourself
-                    print("cannot vote for yourself")
+                if self.sid_to_player_id[sid] == vote:  # Cannot vote for yourself
                     continue
 
-                print(vote, vote in self.sid_to_player_id.inv)
                 if vote not in self.sid_to_player_id.inv:  # Player that is voted for does not exist
-                    print("player doesn't exist")
                     continue
 
-                self.total_votes[vote] = self.total_votes.get(vote, 0) + 1
+                vote_sid = self.sid_to_player_id.inv[vote]
+                self.total_votes[vote_sid] = self.total_votes.get(vote_sid, 0) + 1
 
-        self._emit_all("end", sorted(list(self.total_votes.items()), key=lambda x: x[1], reverse=True), -1)
+        self._emit_all("end", sorted(list(self.total_votes.items()), key=lambda x: x[1], reverse=True), self.sid_to_player_id["ai"])
 
         time.sleep(10)
         self._emit_all("waiting-room")
