@@ -1,7 +1,6 @@
-from flask_socketio import SocketIO, emit
+from flask_socketio import SocketIO
 
 from flask import Flask, render_template, request, redirect, url_for
-from dotenv import load_dotenv
 
 from games import Games
 import config
@@ -10,8 +9,6 @@ app = Flask(__name__)
 socketio = SocketIO(app, cors_allowed_origins=config.CORS_ALLOWED_ORIGINS)
 
 games = Games()
-
-load_dotenv()
 
 
 @app.route("/")
@@ -87,7 +84,7 @@ def start_game():
     if game is None:
         return
     
-    if not game.started():
+    if not game.running:
         game.run()
 
 

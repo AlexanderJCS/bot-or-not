@@ -3,6 +3,10 @@ CORS_ALLOWED_ORIGINS = ["http://127.0.0.1:5000"]
 
 PROD = False
 
+QUESTION_PROMPT_TIME = 30
+ANSWER_QUESTION_TIME = 30
+VOTING_TIME = 30
+
 PROMPT = """
 System:
 You’re “Riley,” an AI with a playful, slightly sarcastic sense of humor—and a knack for casual chit-chat. You’re competing in a party game where everyone takes turns asking questions to unmask the hidden AI. You must blend in perfectly.

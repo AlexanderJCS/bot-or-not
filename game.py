@@ -1,5 +1,6 @@
 import os
 import random
+from typing import Sized
 from enum import Enum
 from bidict import bidict
 
@@ -11,6 +12,9 @@ import config
 import threading
 
 from google import genai
+from dotenv import load_dotenv
+
+load_dotenv()
 
 client = genai.Client(api_key=os.getenv("GEMINI_KEY"))
 
@@ -24,19 +28,14 @@ class GameState(Enum):
 
 class Game:
     def __init__(self):
-        self.round: int = -1
         self.players: list[str] = []
-        self.players_reminaing: list[str] = []
-        self.state: GameState = GameState.WAITING
         self.questions: dict[str, str] = {}  # key: sid, value: question
         self.responses: dict[str, str] = {}  # key: sid, value: response
         self.votes: dict[str, int] = {}  # key: sid, value: vote
         self.sid_to_player_id: bidict[str, int] = bidict()
         self.player_id = 0
         self.total_votes = {}
-    
-    def started(self) -> bool:
-        return self.state != GameState.WAITING
+        self.running = False
     
     def _emit_all(self, event: str, *args):
         for player in self.players:
@@ -76,51 +75,45 @@ class Game:
         
         return sorted(player_id_and_response, key=lambda x: x[0])
     
-    def _get_summary(self):
-        summary = sorted(list(self.total_votes.items()), key=lambda x: x[1], reverse=True)
+    def _wait_response(self, countdown: float, response_field: Sized, count_ai: bool = False) -> None:
+        target_players = len(self.players) - (0 if count_ai else 1)  # AI is counted as a player
+        
+        start_time = time.monotonic()
+        while time.monotonic() - start_time < countdown and len(response_field) < target_players:
+            time.sleep(0.1)
     
     def run(self):
-        self.players_reminaing = list(self.players)  # Shallow copy
-
+        self.running = True
+        
         for player in self.sid_to_player_id.values():
             self.total_votes[player] = 0
 
-        self.state = GameState.GET_QUESTION
-        question_prompt_time = 30
-        
-        self._emit_all("question-prompt", question_prompt_time)
-        while question_prompt_time > 0 and len(self.questions) < len(self.players_reminaing):
-            question_prompt_time -= 1
-            time.sleep(1)
+        self.questions = {}
+        self._emit_all("question-prompt", config.QUESTION_PROMPT_TIME)
+        self._wait_response(config.QUESTION_PROMPT_TIME, self.questions)
 
-        self.add_player("ai")
+        if "ai" not in self.players:
+            self.add_player("ai")
 
-        while len(self.questions) > 0:
-            self.state = GameState.ANSWER_QUESTION
-            answer_time = 30
+        while self.questions:
             self.responses = {}
             question = self._get_question()
-            self._emit_all("answer-question", answer_time, question)
-            
+            self._emit_all("answer-question", config.ANSWER_QUESTION_TIME, question)
+
             ai_response_thread = threading.Thread(target=self._gen_ai_response, args=(question,))
             ai_response_thread.start()
-            while answer_time > 0 and len(self.responses) < len(self.players_reminaing) + 1:
-                answer_time -= 1
-                time.sleep(1)
+            self._wait_response(config.ANSWER_QUESTION_TIME, self.responses, count_ai=True)
             ai_response_thread.join()
-            
-            for sid in self.players_reminaing:
+
+            for sid in self.players:
                 if sid not in self.responses:
-                    self.responses[sid] = "This player did not respond in time"
-            
-            self.state = GameState.VOTING
-            vote_time = 30
-            self._emit_all("vote", vote_time, self._collect_responses())
+                    self.responses[sid] = "Player did not respond in time"
+
+            self._emit_all("vote", config.VOTING_TIME, self._collect_responses())
             self.votes = {}
-            while vote_time > 0 and len(self.votes) < len(self.players_reminaing):
-                vote_time -= 1
-                time.sleep(1)
-            
+            self._wait_response(config.VOTING_TIME, self.votes)
+
+            # Register votes
             print("done voting")
             print(self.votes)
             print(f"{self.sid_to_player_id=}")
@@ -130,26 +123,24 @@ class Game:
                 except ValueError:
                     print("Invalid vote")
                     continue
-                
+
                 if self.sid_to_player_id[sid] == vote:
                     # Cannot vote for yourself
                     print("cannot vote for yourself")
                     continue
-                
+
                 print(vote, vote in self.sid_to_player_id.inv)
                 if vote not in self.sid_to_player_id.inv:  # Player that is voted for does not exist
                     print("player doesn't exist")
                     continue
-                
+
                 self.total_votes[vote] = self.total_votes.get(vote, 0) + 1
-                
-            self.round += 1
-        
-        self.state = GameState.WAITING
+
         self._emit_all("end", sorted(list(self.total_votes.items()), key=lambda x: x[1], reverse=True), -1)
-        
+
         time.sleep(10)
         self._emit_all("waiting-room")
+        self.running = False
     
     def add_player(self, sid: str):
         self.player_id += 1
