@@ -2,62 +2,112 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Game Room</title>
-
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Game Room | Bot or Not</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&family=Poppins:wght@500;600;700&family=Quicksand:wght@300..700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/game_room.css') }}">
     <script
       src="https://code.jquery.com/jquery-3.7.1.slim.min.js"
       integrity="sha256-kmHvs0B+OpCW5GVHUNjv9rOmY0IvSIRcf7zGUDTDQM8="
       crossorigin="anonymous"></script>
-
     <script src="https://cdn.socket.io/4.7.5/socket.io.min.js" integrity="sha384-2huaZvOR9iDzHqslqwpR87isEmrfxqyWOF7hr7BY6KG0+hVKLoEXMPUJw3ynWuhO" crossorigin="anonymous"></script>
-
 </head>
 <body>
     <script>
         const SERVER_IP = "{{ websocket_connection_url }}";
     </script>
 
-    <div id="waiting-info">
-        <span id="num-players"></span> players connected
-        <script src="{{ url_for('static', filename='game_room/game_room.js') }}"></script>
-        <button id="start">Start</button>
-    </div>
-
-    <span>Countdown: <span id="countdown"></span></span>
-
-    <div id="question-prompt">
-        <label for="question-input">Enter your Question</label><input type="text" id="question-input"/>
-        <button id="submit-question">Submit</button>
-    </div>
-
-    <div id="answer-question">
-        <span>Question: <span id="question"></span></span><br>
-
-        <label for="question-response">Enter your Response</label><input type="text" id="question-response"/>
-        <button id="submit-question-response">Submit Response</button>
-
-    </div>
-
-    <div id="vote">
-        <span id="last-question"></span>
-
-        <div id="player-responses">
-            <span class="player-response">
-                Player 1
-                <span class="player-response">
-                    Response: <span class="response">abc</span>
-                </span>
-                <button class="vote-button" id="vote-player-1">Vote</button>
-            </span>
+    <div class="container game-container">
+        <div class="game-header">
+            <h1>Bot or Not</h1>
+            <div class="game-status">
+                <span>Time:</span>
+                <div class="countdown-container">
+                    <div class="countdown-ring" id="countdown-ring"></div>
+                    <div class="countdown-background">
+                        <div class="countdown-number" id="countdown"></div>
+                    </div>
+                </div>
+            </div>
         </div>
+        
+        <!-- Waiting Room Section -->
+        <section id="waiting-info" class="section">
+            <div class="card">
+                <div class="player-count">
+                    <span id="num-players">0</span> players connected
+                </div>
+                <p>Waiting for more players to join. Share the room code with your friends!</p>
+                <div class="room-code">
+                    <span>Room Code: </span>
+                    <span id="room-code-display"></span>
+                </div>
+                <button id="start" class="start-button pulse">Start Game</button>
+            </div>
+        </section>
+        
+        <!-- Question Prompt Section -->
+        <section id="question-prompt" class="section">
+            <div class="card">
+                <h2>Submit Your Question</h2>
+                <p>Ask a question that might help identify the AI!</p>
+                <div class="form-group">
+                    <label for="question-input">Your Question</label>
+                    <input type="text" id="question-input" placeholder="Type your question here...">
+                </div>
+                <button id="submit-question">Submit Question</button>
+            </div>
+        </section>
+        
+        <!-- Answer Question Section -->
+        <section id="answer-question" class="section">
+            <div class="card">
+                <h2>Answer The Question</h2>
+                <div class="question-display">
+                    <span id="question"></span>
+                </div>
+                <div class="form-group">
+                    <label for="question-response">Your Response</label>
+                    <input type="text" id="question-response" placeholder="Type your answer here...">
+                </div>
+                <button id="submit-question-response">Submit Response</button>
+            </div>
+        </section>
+        
+        <!-- Voting Section -->
+        <section id="vote" class="section">
+            <div class="card">
+                <h2>Vote for the AI</h2>
+                <div class="question-container">
+                    <p>Question:</p>
+                    <div class="question-display" id="last-question"></div>
+                </div>
+                <p>Read all responses and vote for who you think is the AI</p>
+                <div id="player-responses">
+                    <!-- Responses will be dynamically added here -->
+                </div>
+            </div>
+        </section>
+        
+        <!-- Results Section -->
+        <section id="results" class="section">
+            <div class="card">
+                <h2>Game Results</h2>
+                <div class="reveal">
+                    The AI was player <span id="ai-player-reveal"></span>
+                </div>
+                <h3>Leaderboard</h3>
+                <div id="leaderboard">
+                    <!-- Leaderboard will be dynamically added here -->
+                </div>
+                <button id="back-to-waiting" class="start-button" style="margin-top: 24px;">Play Again</button>
+            </div>
+        </section>
     </div>
 
-    <div id="results">
-        <span>The AI was player <span id="ai-player-reveal"></span></span>
-
-        <div id="leaderboard">
-
-        </div>
-    </div>
+    <script src="{{ url_for('static', filename='game_room/game_room.js') }}"></script>
 </body>
 </html>

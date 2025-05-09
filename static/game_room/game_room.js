@@ -1,48 +1,100 @@
 let socket;
-
 let lastQuestion = "";
-
+let maxCountdown = 30; // Default max countdown value
 
 function getGameCode() {
-    let splitUrl =  window.location.pathname.split('/');
+    let splitUrl = window.location.pathname.split('/');
     return splitUrl[splitUrl.length - 1];
 }
 
-
-function countdown(time) {
+function updateCountdownRing(time, maxTime = maxCountdown) {
+    if (!time || time <= 0) {
+        $("#countdown").text("");
+        $("#countdown-ring").css("background", "conic-gradient(var(--primary) 0%, transparent 0%)");
+        return;
+    }
+    
+    const percentage = (time / maxTime) * 100;
     $("#countdown").text(time);
+    $("#countdown-ring").css("background", `conic-gradient(var(--primary) ${percentage}%, transparent ${percentage}%)`);
+    
+    // Add warning colors when time is running low
+    if (time <= 5) {
+        $("#countdown-ring").css("background", `conic-gradient(var(--error) ${percentage}%, transparent ${percentage}%)`);
+    } else if (time <= 10) {
+        $("#countdown-ring").css("background", `conic-gradient(var(--warning) ${percentage}%, transparent ${percentage}%)`);
+    }
+    
+    // Add pulse animation for last 10 seconds
+    if (time <= 10) {
+        $(".countdown-container").addClass("pulse");
+    } else {
+        $(".countdown-container").removeClass("pulse");
+    }
+}
+
+function countdown(time, maxTime = maxCountdown) {
+    maxCountdown = maxTime; // Update the global max countdown
+    updateCountdownRing(time, maxTime);
 }
 
 function addPlayerResponse(responseText, playerNumber) {
     const playerResponse = $(`
-        <span class="player-response">
-            <span class="player-response">
-                Player ${playerNumber} Response: <span class="response">${responseText}</span>
-            </span>
+        <div class="player-response fade-in">
+            <div class="player-id">Player ${playerNumber}</div>
+            <div class="response-text">${responseText}</div>
             <button class="vote-button" id="vote-player-${playerNumber}">Vote</button>
-        </span>
+        </div>
     `);
 
     $("#player-responses").append(playerResponse);
 }
 
+function addLeaderboardEntry(player, score) {
+    const entry = $(`
+        <div class="leaderboard-entry fade-in">
+            <span class="player-id">Player ${player}</span>
+            <span class="player-score">${score} points</span>
+        </div>
+    `);
+    
+    $("#leaderboard").append(entry);
+}
+
+function showSection(sectionId) {
+    // Hide all sections
+    $("#question-prompt, #waiting-info, #vote, #answer-question, #results").hide();
+    
+    // Show the requested section with animation
+    $(sectionId).show().addClass("fade-in");
+    
+    // Remove animation class after animation completes
+    setTimeout(() => {
+        $(sectionId).removeClass("fade-in");
+    }, 500);
+}
+
 function init() {
+    // Display room code for sharing
+    $("#room-code-display").text(getGameCode());
+    
+    // Initialize countdown timer
     setInterval(() => {
-        let countdown = $("#countdown");
-        let next = Number.parseInt(countdown.text()) - 1;
-        if (next <= 0 || isNaN(next)) {
-            countdown.text("");
+        let countdownEl = $("#countdown");
+        let currentTime = Number.parseInt(countdownEl.text());
+        
+        if (currentTime <= 0 || isNaN(currentTime)) {
+            updateCountdownRing(0);
         } else {
-            countdown.text(next);
+            currentTime -= 1;
+            updateCountdownRing(currentTime, maxCountdown);
         }
     }, 1000);
 
-    $("#question-prompt").hide();
-    $("#waiting-info").hide();
-    $("#vote").hide();
-    $("#answer-question").hide();
-    $("#results").hide();
+    // Hide all game sections initially
+    showSection("#waiting-info");
 
+    // Connect to websocket
     socket = io.connect(SERVER_IP);
 
     socket.on("players", (num_players) => {
@@ -54,51 +106,31 @@ function init() {
 
         let gameCode = getGameCode();
         socket.emit("join_game", gameCode);
-
-        $("#question-prompt").hide();
-        $("#waiting-info").show();
-        $("#vote").hide();
-        $("#answer-question").hide();
-        $("#results").hide();
+        
+        showSection("#waiting-info");
     });
 
     socket.on("waiting-room", () => {
-        $("#question-prompt").hide();
-        $("#waiting-info").show();
-        $("#vote").hide();
-        $("#answer-question").hide();
-        $("#results").hide();
+        showSection("#waiting-info");
+        updateCountdownRing(0); // Reset countdown
     });
 
     socket.on("question-prompt", (time) => {
-        $("#question-prompt").show("fast");
-        $("#waiting-info").hide("fast");
-        $("#vote").hide("fast");
-        $("#answer-question").hide("fast");
-        $("#results").hide("fast");
-
-        countdown(time);
+        showSection("#question-prompt");
+        countdown(time, time); // Pass the max time as well
+        $("#question-input").focus();
     });
 
     socket.on("answer-question", (time, question) => {
-        $("#question-prompt").hide("fast");
-        $("#waiting-info").hide("fast");
-        $("#vote").hide("fast");
-        $("#answer-question").show("fast");
-        $("#results").hide("fast");
-
+        showSection("#answer-question");
         $("#question").text(question);
         lastQuestion = question;
-        countdown(time)
-    })
+        countdown(time, time);
+        $("#question-response").focus();
+    });
 
     socket.on("vote", (time, responses) => {
-        $("#question-prompt").hide("fast");
-        $("#waiting-info").hide("fast");
-        $("#vote").show("fast");
-        $("#answer-question").hide("fast");
-        $("#results").hide("fast");
-
+        showSection("#vote");
         $("#last-question").text(lastQuestion);
 
         $("#player-responses").empty();
@@ -107,49 +139,77 @@ function init() {
             addPlayerResponse(response, playerID);
         }
 
-        countdown(time)
+        countdown(time, time);
     });
 
     socket.on("end", (results, aiPlayer) => {
-        $("#question-prompt").hide("fast");
-        $("#waiting-info").hide("fast");
-        $("#vote").hide("fast");
-        $("#answer-question").hide("fast");
-        $("#results").show("fast");
-
+        showSection("#results");
         $("#ai-player-reveal").text(aiPlayer);
-
-        console.log(results);
 
         $("#leaderboard").empty();
         results.forEach((result) => {
             const [player, score] = result;
-
-            $("#leaderboard").append($(`
-                <span>Player ${player}: ${score}</span>
-            `));
+            addLeaderboardEntry(player, score);
         });
+        
+        updateCountdownRing(0); // Reset countdown
     });
 
+    // Button event handlers
     $("#start").click(() => {
         socket.emit("start");
+        $("#start").prop("disabled", true).text("Starting...");
     });
 
     $("#submit-question").click(() => {
-        socket.emit("submit-question", $("#question-input").val());
+        const question = $("#question-input").val().trim();
+        if (question) {
+            socket.emit("submit-question", question);
+            $("#question-input").val("");
+            $("#submit-question").prop("disabled", true).text("Submitted");
+        }
     });
 
     $("#submit-question-response").click(() => {
-        socket.emit("submit-response", $("#question-response").val());
+        const response = $("#question-response").val().trim();
+        if (response) {
+            socket.emit("submit-response", response);
+            $("#question-response").val("");
+            $("#submit-question-response").prop("disabled", true).text("Submitted");
+        }
     });
 
     $(document).on("click", ".vote-button", function() {
         const playerID = $(this).attr("id").split("-")[2];  // extract player number
-
         socket.emit("vote-for", playerID);
+        
+        // Visual feedback for vote
+        $(".vote-button").prop("disabled", true);
+        $(this).text("Voted").addClass("voted");
+    });
+    
+    $("#back-to-waiting").click(() => {
+        socket.emit("restart");
+        showSection("#waiting-info");
+        updateCountdownRing(0);
+        $("#start").prop("disabled", false).text("Start Game");
+        $("#submit-question").prop("disabled", false).text("Submit Question");
+        $("#submit-question-response").prop("disabled", false).text("Submit Response");
+    });
+    
+    // Allow pressing Enter to submit
+    $("#question-input").keypress(function(e) {
+        if (e.which === 13) {
+            $("#submit-question").click();
+        }
+    });
+    
+    $("#question-response").keypress(function(e) {
+        if (e.which === 13) {
+            $("#submit-question-response").click();
+        }
     });
 }
-
 
 $(document).ready(() => {
     init();
