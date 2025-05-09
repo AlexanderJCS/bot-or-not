@@ -1,13 +1,14 @@
 let socket;
 let lastQuestion = "";
-let maxCountdown = 30; // Default max countdown value
+let countdownStartTime = 0;
+let countdownTime = 0;
 
 function getGameCode() {
     let splitUrl = window.location.pathname.split('/');
     return splitUrl[splitUrl.length - 1];
 }
 
-function updateCountdownRing(time, maxTime = maxCountdown) {
+function updateCountdownRing(time, maxTime) {
     if (!time || time <= 0) {
         $("#countdown").text("");
         $("#countdown-ring").css("background", "conic-gradient(var(--primary) 0%, transparent 0%)");
@@ -15,7 +16,7 @@ function updateCountdownRing(time, maxTime = maxCountdown) {
     }
     
     const percentage = (time / maxTime) * 100;
-    $("#countdown").text(time);
+    $("#countdown").text(Math.ceil(time));
     $("#countdown-ring").css("background", `conic-gradient(var(--primary) ${percentage}%, transparent ${percentage}%)`);
     
     // Add warning colors when time is running low
@@ -33,8 +34,9 @@ function updateCountdownRing(time, maxTime = maxCountdown) {
     }
 }
 
-function countdown(time, maxTime = maxCountdown) {
-    maxCountdown = maxTime; // Update the global max countdown
+function countdown(time, maxTime) {
+    countdownTime = maxTime; // Update the global max countdown
+    countdownStartTime = performance.now();
     updateCountdownRing(time, maxTime);
 }
 
@@ -76,19 +78,12 @@ function showSection(sectionId) {
 function init() {
     // Display room code for sharing
     $("#room-code-display").text(getGameCode());
-    
+
     // Initialize countdown timer
     setInterval(() => {
-        let countdownEl = $("#countdown");
-        let currentTime = Number.parseInt(countdownEl.text());
-        
-        if (currentTime <= 0 || isNaN(currentTime)) {
-            updateCountdownRing(0);
-        } else {
-            currentTime -= 1;
-            updateCountdownRing(currentTime, maxCountdown);
-        }
-    }, 1000);
+        let remainingTime = countdownTime - (performance.now() - countdownStartTime) / 1000;
+        updateCountdownRing(remainingTime, countdownTime)
+    }, 5);
 
     // Hide all game sections initially
     showSection("#waiting-info");
