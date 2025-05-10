@@ -21,7 +21,6 @@ def game_room(game_id):
     # Create game if it doesn't exist when developing
     if config.PROD is False and not games.has_game(game_id):
         code = games.create_game()
-        print("redirected")
         return redirect(url_for("game_room", game_id=code))
 
     elif not games.has_game(game_id):
