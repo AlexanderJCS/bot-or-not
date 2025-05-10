@@ -39,6 +39,7 @@ class Game:
         self.running = False
     
     def _emit_all(self, event: str, *args):
+        # TODO: improve performance by "bulk emitting" -- read docs to see how that's done
         for player in self.players:
             if player == "ai":
                 continue
@@ -120,6 +121,10 @@ class Game:
         while self.questions:
             # Shuffle IDs for every vote so players can't determine the AI one round then vote the same every round
             self._shuffle_ids()
+            
+            # Notify the players what ID they are
+            for sid, player_id in self.sid_to_player_id.items():
+                sio.emit("your-player-id", player_id, to=sid)
             
             # Ask question and get responses
             self.responses = {}

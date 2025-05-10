@@ -2,6 +2,7 @@ let socket;
 let lastQuestion = "";
 let countdownStartTime = 0;
 let maxCountdownTime = 0;
+let currentPlayerID = -1;
 
 function getGameCode() {
     let splitUrl = window.location.pathname.split('/');
@@ -99,14 +100,16 @@ function init() {
         console.log("Connected to server");
 
         const gameCode = getGameCode();
-        let name = localStorage.getItem("name");
+        let name = sessionStorage.getItem("name");
 
-        if (name.trim() === "") {
+        if (name === null || name.trim() === "") {
             // Prompt the user for the name
             name = prompt("Please enter your name:")
 
             if (name === null || name.trim() === "") {  // Name is still undefined (i.e., user cancelled)
                 name = "No name entered";
+            } else {
+                sessionStorage.setItem("name", name);
             }
         }
 
@@ -147,6 +150,10 @@ function init() {
         $("#player-responses").empty();
         for (let i = 0; i < responses.length; i++) {
             const [playerID, response] = responses[i];
+            if (playerID === currentPlayerID) {
+                continue;  // do not show this player's response
+            }
+
             addPlayerResponse(response, playerID);
         }
 
@@ -169,6 +176,10 @@ function init() {
         });
         
         countdown(timeout);
+    });
+
+    socket.on("your-player-id", (playerID) => {
+        currentPlayerID = playerID;
     });
 
     // Button event handlers
