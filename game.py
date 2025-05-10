@@ -104,7 +104,7 @@ class Game:
         # Convert SID -> votes to name -> votes
         # After doing this the variable becomes a misnomer but oh well
         for i, (sid, votes) in enumerate(sid_votes_pairs):
-            name = self.sid_to_name[sid]
+            name = self.sid_to_name.get(sid, "Player left")
             sid_votes_pairs[i] = (name, votes)
         
         return sid_votes_pairs, humans_win
