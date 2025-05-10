@@ -98,7 +98,8 @@ class Game:
     
     def _collect_results(self):
         sid_votes_pairs = sorted(list(self.total_votes.items()), key=lambda x: x[1], reverse=True)
-        humans_win = sid_votes_pairs[0][0] == "ai"
+        
+        humans_win = len(sid_votes_pairs) > 0 and sid_votes_pairs[0][0] == "ai"
         
         # Convert SID -> votes to name -> votes
         # After doing this the variable becomes a misnomer but oh well
