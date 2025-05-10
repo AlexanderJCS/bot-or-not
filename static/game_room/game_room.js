@@ -1,7 +1,7 @@
 let socket;
 let lastQuestion = "";
 let countdownStartTime = 0;
-let countdownTime = 0;
+let maxCountdownTime = 0;
 
 function getGameCode() {
     let splitUrl = window.location.pathname.split('/');
@@ -34,10 +34,10 @@ function updateCountdownRing(time, maxTime) {
     }
 }
 
-function countdown(time, maxTime) {
-    countdownTime = maxTime; // Update the global max countdown
+function countdown(time) {
+    maxCountdownTime = time; // Update the global max countdown
     countdownStartTime = performance.now();
-    updateCountdownRing(time, maxTime);
+    updateCountdownRing(time, maxCountdownTime);
 }
 
 function addPlayerResponse(responseText, playerNumber) {
@@ -54,8 +54,8 @@ function addPlayerResponse(responseText, playerNumber) {
 function addLeaderboardEntry(player, score) {
     const entry = $(`
         <div class="leaderboard-entry fade-in">
-            <span class="player-id">Player ${player}</span>
-            <span class="player-score">${score} points</span>
+            <span class="player-id">${player}</span>
+            <span class="player-score">${score} votes</span>
         </div>
     `);
     
@@ -81,8 +81,8 @@ function init() {
 
     // Initialize countdown timer
     setInterval(() => {
-        let remainingTime = countdownTime - (performance.now() - countdownStartTime) / 1000;
-        updateCountdownRing(remainingTime, countdownTime)
+        let remainingTime = maxCountdownTime - (performance.now() - countdownStartTime) / 1000;
+        updateCountdownRing(remainingTime, maxCountdownTime)
     }, 5);
 
     // Hide all game sections initially
@@ -98,8 +98,21 @@ function init() {
     socket.on("connect", () => {
         console.log("Connected to server");
 
-        let gameCode = getGameCode();
-        socket.emit("join_game", gameCode);
+        const gameCode = getGameCode();
+        let name = localStorage.getItem("name");
+
+        if (name.trim() === "") {
+            // Prompt the user for the name
+            name = prompt("Please enter your name:")
+
+            if (name === null || name.trim() === "") {  // Name is still undefined (i.e., user cancelled)
+                name = "No name entered";
+            }
+        }
+
+        console.log("Name: ", name)
+
+        socket.emit("join_game", gameCode, name);
         
         showSection("#waiting-info");
     });
@@ -112,7 +125,7 @@ function init() {
 
     socket.on("question-prompt", (time) => {
         showSection("#question-prompt");
-        countdown(time, time); // Pass the max time as well
+        countdown(time); // Pass the max time as well
 
         $("#submit-question").prop("disabled", false).text("Submit Question");
         $("#question-input").focus();
@@ -123,7 +136,7 @@ function init() {
         $("#submit-question-response").prop("disabled", false).text("Submit Response");
         $("#question").text(question);
         lastQuestion = question;
-        countdown(time, time);
+        countdown(time);
         $("#question-response").focus();
     });
 
@@ -137,12 +150,17 @@ function init() {
             addPlayerResponse(response, playerID);
         }
 
-        countdown(time, time);
+        countdown(time);
     });
 
-    socket.on("end", (results, aiPlayer) => {
+    socket.on("end", (results, humansWin, timeout) => {
         showSection("#results");
-        $("#ai-player-reveal").text(aiPlayer);
+
+        if (humansWin) {
+            $("#winner-reveal").text("Humans Win — Bot was identified")
+        } else {
+            $("#winner-reveal").text(`${results[0]} wins — They were voted as the bot, but human all along!`)
+        }
 
         $("#leaderboard").empty();
         results.forEach((result) => {
@@ -150,7 +168,7 @@ function init() {
             addLeaderboardEntry(player, score);
         });
         
-        updateCountdownRing(0); // Reset countdown
+        countdown(timeout);
     });
 
     // Button event handlers

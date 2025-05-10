@@ -33,6 +33,7 @@ class Game:
         self.responses: dict[str, str] = {}  # key: sid, value: response
         self.votes: dict[str, int] = {}  # key: sid, value: the player's vote
         self.sid_to_player_id: bidict[str, int] = bidict()
+        self.sid_to_name: dict[str, str] = {}
         self.player_id = 0
         self.total_votes: [str, int] = {}  # Key: sid, value: accumulated votes for that player
         self.running = False
@@ -52,7 +53,6 @@ class Game:
         return questions_list[0][1]
     
     def add_question(self, sid: str, question: str):
-        print(f"Received question: {question}")
         self.questions[sid] = question
     
     def add_response(self, sid: str, response: str):
@@ -95,11 +95,23 @@ class Game:
         for sid, player_id in zip(player_sids, player_ids):
             self.sid_to_player_id[sid] = player_id
     
+    def _collect_results(self):
+        sid_votes_pairs = sorted(list(self.total_votes.items()), key=lambda x: x[1], reverse=True)
+        humans_win = sid_votes_pairs[0][0] == "ai"
+        
+        # Convert SID -> votes to name -> votes
+        # After doing this the variable becomes a misnomer but oh well
+        for i, (sid, votes) in enumerate(sid_votes_pairs):
+            name = self.sid_to_name[sid]
+            sid_votes_pairs[i] = (name, votes)
+        
+        return sid_votes_pairs, humans_win
+    
     def run(self):
         self.running = True
 
         if "ai" not in self.players:
-            self.add_player("ai")
+            self.add_player("ai", "Bot")
 
         self.questions = {}
         self._emit_all("question-prompt", config.QUESTION_PROMPT_TIME)
@@ -145,19 +157,20 @@ class Game:
                 vote_sid = self.sid_to_player_id.inv[vote]
                 self.total_votes[vote_sid] = self.total_votes.get(vote_sid, 0) + 1
 
-        self._emit_all("end", sorted(list(self.total_votes.items()), key=lambda x: x[1], reverse=True), self.sid_to_player_id["ai"])
-
-        time.sleep(10)
+        self._emit_all("end", *self._collect_results(), config.RESULTS_SCREEN_TIME)
+        time.sleep(config.RESULTS_SCREEN_TIME)
         self._emit_all("waiting-room")
         self.running = False
     
-    def add_player(self, sid: str):
+    def add_player(self, sid: str, name: str):
         self.player_id += 1
         self.sid_to_player_id[sid] = self.player_id
+        self.sid_to_name[sid] = name
         self.players.append(sid)
     
     def remove_player(self, sid: str):
         del self.sid_to_player_id[sid]
+        del self.sid_to_name[sid]
         self.players.remove(sid)
     
     def update_player_count(self):

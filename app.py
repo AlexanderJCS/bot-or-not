@@ -37,13 +37,12 @@ def create_game():
 
 
 @socketio.on("join_game")
-def handle_join_game(game_code):
+def handle_join_game(game_code: str, name: str):
     if not games.has_game(game_code):
         print("No game code!")
         return  # Game code not found
         
-    games.add_player(game_code, request.sid)
-    game = games.get_game(game_code)
+    games.add_player(game_code, request.sid, name)
 
 
 @socketio.on("disconnect")

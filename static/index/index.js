@@ -9,7 +9,8 @@ $(document).ready(() => {
     
     $("#create-game").click((e) => {
         const playerName = $("#name").val().trim();
-        
+        localStorage.setItem("name", playerName);
+
         if (!playerName) {
             alert("Please enter your name");
             return;
@@ -27,6 +28,7 @@ $(document).ready(() => {
     $("#join-room").click((e) => {
         const roomId = $("#room-id").val().trim();
         const playerName = $("#join-name").val().trim();
+        localStorage.setItem("name", playerName);
         
         if (!roomId) {
             alert("Please enter a room ID");

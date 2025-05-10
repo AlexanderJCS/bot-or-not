@@ -23,10 +23,10 @@ class Games:
         
         return game_code
     
-    def add_player(self, code: str, sid: str):
+    def add_player(self, code: str, sid: str, name: str):
         game = self.code_to_game[code]
         
-        game.add_player(sid)
+        game.add_player(sid, name)
         self.sid_to_game[sid] = game
         game.update_player_count()
     
