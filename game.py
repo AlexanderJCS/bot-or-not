@@ -14,13 +14,11 @@ import threading
 from google import genai
 from dotenv import load_dotenv
 
+from strutils import truncate
+
 load_dotenv()
 
 client = genai.Client(api_key=os.getenv("GEMINI_KEY"))
-
-
-def truncate(s: str, length: int):
-    return s[:length] if len(s) > length else s
 
 
 class GameState(Enum):
@@ -181,7 +179,7 @@ class Game:
     def add_player(self, sid: str, name: str):
         self.player_id += 1
         self.sid_to_player_id[sid] = self.player_id
-        self.sid_to_name[sid] = name
+        self.sid_to_name[sid] = truncate(name, config.NAME_CHAR_LIMIT)
         self.players.append(sid)
         
         sio.emit("game-status", self.running, to=sid)
@@ -192,5 +190,5 @@ class Game:
         self.players.remove(sid)
     
     def update_player_count(self):
-        self._emit_all("players", len(self.players))
+        self._emit_all("players", len(self.players), list(self.sid_to_name.values()))
     

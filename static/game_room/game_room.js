@@ -92,8 +92,14 @@ function init() {
     // Connect to websocket
     socket = io.connect(SERVER_IP);
 
-    socket.on("players", (num_players) => {
-        $("#num-players").text(num_players);
+    socket.on("players", (numPlayers, playerNames) => {
+        $("#num-players").text(numPlayers);
+
+        let playersElement = $("#players");
+        playersElement.empty();
+        playerNames.forEach((player) => {
+            playersElement.append(`<div class="player">${player}</div>`)
+        });
     });
 
     socket.on("connect", () => {

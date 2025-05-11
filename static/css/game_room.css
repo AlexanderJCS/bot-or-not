@@ -199,6 +199,10 @@
   animation: pulse 2s infinite;
 }
 
+.player {
+  font-size: 1.2em;
+}
+
 @keyframes pulse {
   0% { transform: scale(1); }
   50% { transform: scale(1.05); }
