@@ -73,6 +73,7 @@ class Game:
         player_id_and_response = [
             (self.sid_to_player_id[sid], response)
             for sid, response in self.responses.items()
+            if sid in self.sid_to_player_id
         ]
         
         return sorted(player_id_and_response, key=lambda x: x[0])
