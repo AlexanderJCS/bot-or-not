@@ -1,24 +1,41 @@
-import hashlib
+import random
 
+import config
 from game import Game
 
 
-def hash_id_to_8_length_string(id_value: int) -> str:
-    # Convert the ID to a string and hash it using SHA-256
-    hash_object = hashlib.sha256(str(id_value).encode())
-    # Get the hexadecimal digest and truncate it to 8 characters
-    return hash_object.hexdigest()[:8]
+def int_to_code(n):
+    code = ""
+    for _ in range(config.GAME_CODE_LETTERS):
+        code = chr(ord("A") + n % 26) + code
+        n //= 26
+    return code
+
+
+def random_code():
+    return int_to_code(random.randint(0, 26**config.GAME_CODE_LETTERS - 1))
 
 
 class Games:
     def __init__(self):
         self.code_to_game: dict[str, Game] = {}
         self.sid_to_game: dict[str, Game] = {}
-        self.id = 0
     
     def create_game(self) -> str:
-        game_code = hash_id_to_8_length_string(self.id)
-        self.id += 1
+        game_code = random_code()
+        
+        iter_counter = 0
+        cannot_find_game = False
+        while game_code in self.code_to_game:
+            game_code = random_code()
+            iter_counter += 1
+            
+            if iter_counter > 100:
+                cannot_find_game = True
+                break
+        
+        if cannot_find_game:
+            return ""
         
         self.code_to_game[game_code] = Game(game_code)
         
