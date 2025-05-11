@@ -27,7 +27,7 @@ def game_room(game_id):
         # TODO: handle this more gracefully
         raise ValueError("No game exists")
 
-    return render_template("game_room.html", websocket_connection_url=config.WEBSOCKET_CONNECTION_URL)
+    return render_template("game_room.html", websocket_connection_url=config.WEBSOCKET_CONNECTION_URL, char_limit=config.CHAR_LIMIT)
 
 
 @app.route("/api/create-game", methods=["POST"])

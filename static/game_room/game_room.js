@@ -198,6 +198,14 @@ function init() {
         $("#start").prop("disabled", true).text("Starting...");
     });
 
+    $("#question-input").on("input", () => {
+        $("#chars-consumed-question-prompt").text($("#question-input").val().length);
+    });
+
+    $("#question-response").on("input", () => {
+        $("#chars-consumed-question-response").text($("#question-response").val().length);
+    });
+
     $("#submit-question").click(() => {
         const question = $("#question-input").val().trim();
         if (question) {

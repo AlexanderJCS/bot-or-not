@@ -19,6 +19,10 @@ load_dotenv()
 client = genai.Client(api_key=os.getenv("GEMINI_KEY"))
 
 
+def truncate(s: str, length: int):
+    return s[:length] if len(s) > length else s
+
+
 class GameState(Enum):
     WAITING = 0,
     GET_QUESTION = 1,
@@ -59,11 +63,11 @@ class Game:
         return questions_list[0][1]
     
     def add_question(self, sid: str, question: str):
-        self.questions[sid] = question
+        self.questions[sid] = truncate(question, config.CHAR_LIMIT)
     
     def add_response(self, sid: str, response: str):
-        self.responses[sid] = response
-    
+        self.responses[sid] = truncate(response, config.CHAR_LIMIT)
+        
     def add_vote(self, sid: str, vote: int):
         self.votes[sid] = vote
     

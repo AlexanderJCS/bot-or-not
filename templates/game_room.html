@@ -64,7 +64,10 @@
                 <p>Ask a question that might help identify the AI!</p>
                 <div class="form-group">
                     <label for="question-input">Your Question</label>
-                    <input type="text" id="question-input" placeholder="Type your question here...">
+                    <input type="text" id="question-input" placeholder="Type your question here..." maxlength="{{ char_limit }}">
+                    <div class="char-wrapper">
+                        <span class="char-counter"><span id="chars-consumed-question-prompt">0</span>/{{ char_limit }}</span>
+                    </div>
                 </div>
                 <button id="submit-question">Submit Question</button>
             </div>
@@ -79,7 +82,10 @@
                 </div>
                 <div class="form-group">
                     <label for="question-response">Your Response</label>
-                    <input type="text" id="question-response" placeholder="Type your answer here...">
+                    <input type="text" id="question-response" placeholder="Type your answer here..." maxlength="{{ char_limit }}">
+                    <div class="char-wrapper">
+                        <span class="char-counter"><span id="chars-consumed-question-response">0</span>/{{ char_limit }}</span>
+                    </div>
                 </div>
                 <button id="submit-question-response">Submit Response</button>
             </div>

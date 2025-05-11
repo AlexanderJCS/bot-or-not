@@ -8,6 +8,8 @@ ANSWER_QUESTION_TIME = 60
 VOTING_TIME = 60
 RESULTS_SCREEN_TIME = 20
 
+CHAR_LIMIT = 140
+
 PROMPT = """
 System:
 You’re “Riley,” an AI with a playful, slightly sarcastic sense of humor—and a knack for casual chit-chat. You’re competing in a party game where everyone takes turns asking questions to unmask the hidden AI. You must blend in perfectly.

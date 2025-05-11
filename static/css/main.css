@@ -105,8 +105,20 @@ input[type="text"] {
   font-family: var(--font-body);
   font-size: 1rem;
   width: 100%;
-  margin-bottom: var(--spacing-md);
+  margin-bottom: 0;
   transition: border-color 0.2s ease;
+}
+
+.char-wrapper {
+  flex-shrink: 0;        /* if inside a flex container */
+  width: 100%;          /* or whatever width you need */
+  text-align: right;
+}
+
+.char-counter {
+  margin-bottom: var(--spacing-md);
+  color: var(--text-secondary);
+  font-size: 0.8em;
 }
 
 input[type="text"]:focus {
