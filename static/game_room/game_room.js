@@ -65,7 +65,7 @@ function addLeaderboardEntry(player, score) {
 
 function showSection(sectionId) {
     // Hide all sections
-    $("#question-prompt, #waiting-info, #vote, #answer-question, #results").hide();
+    $("#question-prompt, #waiting-info, #vote, #answer-question, #results, #limbo").hide();
     
     // Show the requested section with animation
     $(sectionId).show().addClass("fade-in");
@@ -87,7 +87,7 @@ function init() {
     }, 5);
 
     // Hide all game sections initially
-    showSection("#waiting-info");
+    showSection("#limbo");
 
     // Connect to websocket
     socket = io.connect(SERVER_IP);
@@ -117,7 +117,17 @@ function init() {
 
         socket.emit("join_game", gameCode, name);
         
-        showSection("#waiting-info");
+        showSection("#limbo");
+    });
+
+    socket.on("game-status", (isRunning) => {
+        console.log("game status", isRunning)
+
+        if (isRunning) {
+            showSection("#limbo");
+        } else {
+            showSection("#waiting-info");
+        }
     });
 
     socket.on("waiting-room", () => {

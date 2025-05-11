@@ -2,6 +2,7 @@ import hashlib
 
 from game import Game
 
+
 def hash_id_to_8_length_string(id_value: int) -> str:
     # Convert the ID to a string and hash it using SHA-256
     hash_object = hashlib.sha256(str(id_value).encode())
@@ -19,7 +20,7 @@ class Games:
         game_code = hash_id_to_8_length_string(self.id)
         self.id += 1
         
-        self.code_to_game[game_code] = Game()
+        self.code_to_game[game_code] = Game(game_code)
         
         return game_code
     
@@ -38,6 +39,10 @@ class Games:
         game.remove_player(sid)
         del self.sid_to_game[sid]
         game.update_player_count()
+        
+        # If there's nobody in the room, delete it
+        if game.num_players() == 0:
+            del self.code_to_game[game.game_code]
     
     def has_game(self, code: str):
         return code in self.code_to_game

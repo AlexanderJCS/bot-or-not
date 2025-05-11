@@ -27,7 +27,9 @@ class GameState(Enum):
 
 
 class Game:
-    def __init__(self):
+    def __init__(self, game_code: str):
+        self.game_code = game_code
+        
         self.players: list[str] = []
         self.questions: dict[str, str] = {}  # key: sid, value: question
         self.responses: dict[str, str] = {}  # key: sid, value: response
@@ -37,6 +39,9 @@ class Game:
         self.player_id = 0
         self.total_votes: [str, int] = {}  # Key: sid, value: accumulated votes for that player
         self.running = False
+    
+    def num_players(self):
+        return len(self.players)
     
     def _emit_all(self, event: str, *args):
         # TODO: improve performance by "bulk emitting" -- read docs to see how that's done
@@ -174,6 +179,8 @@ class Game:
         self.sid_to_player_id[sid] = self.player_id
         self.sid_to_name[sid] = name
         self.players.append(sid)
+        
+        sio.emit("game-status", self.running, to=sid)
     
     def remove_player(self, sid: str):
         del self.sid_to_player_id[sid]
