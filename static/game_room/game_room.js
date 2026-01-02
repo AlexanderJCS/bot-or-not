@@ -352,6 +352,7 @@ function init() {
             "style": style
         });
         $("#question-input").val("");
+        $("style-input").val("");
         $("#submit-question").prop("disabled", true).text("Submitted");
     });
 
