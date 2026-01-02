@@ -33,7 +33,7 @@ class Game:
         self.game_code = game_code
         
         self.players: list[str] = []
-        self.questions: dict[str, str] = {}  # key: sid, value: question
+        self.questions_and_style: dict[str, dict[str, str]] = {}  # key: sid, value: question
         self.responses: dict[str, str] = {}  # key: sid, value: response
         self.votes: dict[str, int] = {}  # key: sid, value: the player's vote
         self.sid_to_player_id: bidict[str, int] = bidict()
@@ -54,14 +54,17 @@ class Game:
             sio.emit(event, args, to=player)
             
     def _get_question(self):
-        questions_list = list(self.questions.items())
+        questions_list = list(self.questions_and_style.items())
         random.shuffle(questions_list)
         
-        del self.questions[questions_list[0][0]]
+        del self.questions_and_style[questions_list[0][0]]
         return questions_list[0][1]
     
-    def add_question(self, sid: str, question: str):
-        self.questions[sid] = truncate(question, config.CHAR_LIMIT)
+    def add_question(self, sid: str, question: str, style: str):
+        self.questions_and_style[sid] = {
+            "question": truncate(question, config.CHAR_LIMIT),
+            "style": style
+        }
     
     def add_response(self, sid: str, response: str):
         self.responses[sid] = truncate(response, config.CHAR_LIMIT)
@@ -69,9 +72,9 @@ class Game:
     def add_vote(self, sid: str, vote: int):
         self.votes[sid] = vote
     
-    def _gen_ai_response(self, question: str):
+    def _gen_ai_response(self, question: str, style: str):
         response = client.models.generate_content(
-            model="gemini-2.5-flash-preview-04-17", contents=config.PROMPT.replace("{{QUESTION}}", question)
+            model="gemini-2.5-flash", contents=config.PROMPT.replace("{{QUESTION}}", question).replace("{{STYLE}}", style)
         )
         
         self.add_response("ai", response.text)
@@ -123,11 +126,11 @@ class Game:
         if "ai" not in self.players:
             self.add_player("ai", "Bot")
 
-        self.questions = {}
+        self.questions_and_style = {}
         self._emit_all("question-prompt", config.QUESTION_PROMPT_TIME)
-        self._wait_response(config.QUESTION_PROMPT_TIME, self.questions)
+        self._wait_response(config.QUESTION_PROMPT_TIME, self.questions_and_style)
 
-        while self.questions:
+        while self.questions_and_style:
             # Shuffle IDs for every vote so players can't determine the AI one round then vote the same every round
             self._shuffle_ids()
             
@@ -137,11 +140,13 @@ class Game:
             
             # Ask question and get responses
             self.responses = {}
-            question = self._get_question()
-            self._emit_all("answer-question", config.ANSWER_QUESTION_TIME, question)
+            question_and_style = self._get_question()
+            question, style = question_and_style["question"], question_and_style["style"]
+            
+            self._emit_all("answer-question", config.ANSWER_QUESTION_TIME, question, style)
 
             # Start thread for AI to answer the question
-            ai_response_thread = threading.Thread(target=self._gen_ai_response, args=(question,))
+            ai_response_thread = threading.Thread(target=self._gen_ai_response, args=(question, style))
             ai_response_thread.start()
             self._wait_response(config.ANSWER_QUESTION_TIME, self.responses, count_ai=True)
             ai_response_thread.join()

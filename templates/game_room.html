@@ -70,12 +70,29 @@
                 <p>Ask a question that might help identify the AI!</p>
                 <div class="form-group">
                     <label for="question-input">Your Question</label>
-                    <input type="text" id="question-input" placeholder="Type your question here..." maxlength="{{ char_limit }}">
+                    <span class="input-row">
+                        <input type="text" id="question-input" placeholder="Type your question here..." maxlength="{{ char_limit }}">
+                        <button id="question-idea-generator">Generate Idea</button>
+                    </span>
+
                     <div class="char-wrapper">
                         <span class="char-counter"><span id="chars-consumed-question-prompt">0</span>/{{ char_limit }}</span>
                     </div>
                 </div>
-                <button id="submit-question">Submit Question</button>
+                <h2>In the style of...</h2>
+                <p>Tell people (and the bot) how to respond to your question.</p>
+                <div class="form-group">
+                    <label for="style-input">Your Response Style</label>
+                    <span class="input-row">
+                        <input type="text" id="style-input" placeholder="Type the response style here..." maxlength="{{ char_limit }}">
+                        <button id="style-idea-generator">Generate Idea</button>
+                    </span>
+
+                    <div class="char-wrapper">
+                        <span class="char-counter"><span id="chars-consumed-style-prompt">0</span>/{{ char_limit }}</span>
+                    </div>
+                </div>
+                <button id="submit-question" class="submit-button">Submit Question</button>
             </div>
         </section>
         
@@ -86,6 +103,10 @@
                 <div class="question-display">
                     <span id="question"></span>
                 </div>
+                <h3>In the style of</h3>
+                <div class="question-display">
+                    <span id="style"></span>
+                </div>
                 <div class="form-group">
                     <label for="question-response">Your Response</label>
                     <input type="text" id="question-response" placeholder="Type your answer here..." maxlength="{{ char_limit }}">
@@ -93,7 +114,7 @@
                         <span class="char-counter"><span id="chars-consumed-question-response">0</span>/{{ char_limit }}</span>
                     </div>
                 </div>
-                <button id="submit-question-response">Submit Response</button>
+                <button id="submit-question-response" class="submit-button">Submit Response</button>
             </div>
         </section>
         
@@ -104,6 +125,10 @@
                 <div class="question-container">
                     <p>Question:</p>
                     <div class="question-display" id="last-question"></div>
+                </div>
+                <div class="question-container">
+                    <p>In the style of:</p>
+                    <div class="question-display" id="last-style"></div>
                 </div>
                 <p>Read all responses and vote for who you think is the AI</p>
                 <div id="player-responses">

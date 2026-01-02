@@ -53,12 +53,21 @@ def handle_disconnect():
 
 
 @socketio.on("submit-question")
-def submit_question(question: str):
+def submit_question(question_and_style: dict):
+    if question_and_style is None:
+        return
+    
+    question = question_and_style.get("question")
+    style = question_and_style.get("style")
+    
+    if not isinstance(question, str) or not isinstance(style, str):
+        return
+    
     game = games.sid_to_game.get(request.sid)
     if game is None:
         return
     
-    game.add_question(request.sid, question)
+    game.add_question(request.sid, question, style)
 
 
 @socketio.on("vote-for")

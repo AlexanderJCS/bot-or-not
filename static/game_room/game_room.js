@@ -1,5 +1,6 @@
 let socket;
 let lastQuestion = "";
+let lastStyle = "";
 let countdownStartTime = 0;
 let maxCountdownTime = 0;
 let currentPlayerID = -1;
@@ -150,11 +151,13 @@ function init() {
         $("#question-input").focus();
     });
 
-    socket.on("answer-question", (time, question) => {
+    socket.on("answer-question", (time, question, style) => {
         showSection("#answer-question");
         $("#submit-question-response").prop("disabled", false).text("Submit Response");
         $("#question").text(question);
+        $("#style").text(style);
         lastQuestion = question;
+        lastStyle = style;
         countdown(time);
         $("#question-response").focus();
     });
@@ -162,6 +165,7 @@ function init() {
     socket.on("vote", (time, responses) => {
         showSection("#vote");
         $("#last-question").text(lastQuestion);
+        $("#last-style").text(lastStyle);
 
         $("#player-responses").empty();
         for (let i = 0; i < responses.length; i++) {
@@ -208,17 +212,27 @@ function init() {
         $("#chars-consumed-question-prompt").text($("#question-input").val().length);
     });
 
+    $("#style-input").on("input", () => {
+        $("#chars-consumed-style-prompt").text($("#style-input").val().length);
+    });
+
     $("#question-response").on("input", () => {
         $("#chars-consumed-question-response").text($("#question-response").val().length);
     });
 
     $("#submit-question").click(() => {
         const question = $("#question-input").val().trim();
-        if (question) {
-            socket.emit("submit-question", question);
-            $("#question-input").val("");
-            $("#submit-question").prop("disabled", true).text("Submitted");
+        const style = $("#style-input").val().trim();
+        if (!question || !style) {
+            return;
         }
+
+        socket.emit("submit-question", {
+            "question": question,
+            "style": style
+        });
+        $("#question-input").val("");
+        $("#submit-question").prop("disabled", true).text("Submitted");
     });
 
     $("#submit-question-response").click(() => {

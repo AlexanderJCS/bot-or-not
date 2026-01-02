@@ -96,8 +96,8 @@
 .question-container {
   background-color: var(--card-bg);
   border-radius: var(--border-radius);
-  padding: var(--spacing-lg);
-  margin-bottom: var(--spacing-lg);
+  padding: var(--spacing-sm);
+  margin-bottom: var(--spacing-sm);
 }
 
 .question-display {
@@ -201,6 +201,20 @@
 
 .player {
   font-size: 1.2em;
+}
+
+.input-row {
+  display: flex;
+  gap: 8px;
+}
+
+.field input[type="text"] {
+  flex: 1;
+  min-width: 0;
+}
+
+.submit-button {
+  width: 100%;
 }
 
 @keyframes pulse {
