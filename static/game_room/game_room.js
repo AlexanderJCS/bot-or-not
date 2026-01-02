@@ -5,6 +5,66 @@ let countdownStartTime = 0;
 let maxCountdownTime = 0;
 let currentPlayerID = -1;
 
+const QUESTIONS = [
+  "What is something everyone thinks they understand, but usually doesn’t?",
+  "What object would confuse an archaeologist from 1,000 years in the future the most?",
+  "What is the most underrated human skill?",
+  "If this room could talk, what secret would it reveal first?",
+  "What rule of society would surprise an intelligent alien?",
+  "What small habit quietly changes a person’s entire life?",
+  "What sounds harmless but actually isn’t?",
+  "What would be the worst possible mascot for a hospital?",
+  "What is something people only learn after it’s too late?",
+  "What invention solved one problem but created ten others?",
+  "What would be a terrible name for a self-help book?",
+  "What is something that feels illegal but isn’t?",
+  "What question should people ask more often, but don’t?",
+  "What would instantly ruin a first impression?",
+  "What is the strangest thing that humans all silently agree on?",
+  "What would be the most inconvenient superpower?",
+  "What is a sign that someone is secretly very competent?",
+  "What would make a meeting immediately go off the rails?",
+  "What is something people pretend to enjoy?",
+  "What would be a bad slogan for a time machine?",
+  "What everyday object is far more powerful than it looks?",
+  "What is the most dramatic way to do something very boring?",
+  "What mistake do people keep making, even when they know better?",
+  "What would be a suspiciously specific warning label?",
+  "What is something that feels like a test, but isn’t?"
+];
+
+const THEMES = [
+  "Answer like a pirate who recently discovered therapy",
+  "Answer as if you are giving live commentary during a disaster documentary",
+  "Answer like an overly serious medieval scholar",
+  "Answer as a very confident person who is slightly wrong",
+  "Answer as if you are whispering in a library",
+  "Answer like a sports announcer calling a dramatic final play",
+  "Answer as a customer support chatbot losing patience",
+  "Answer like a wise grandparent who refuses to use modern examples",
+  "Answer as if you are explaining this to a very skeptical cat",
+  "Answer like a motivational speaker who took it too far",
+  "Answer as if you are being interrogated and overexplaining",
+  "Answer like a travel guide describing something extremely mundane",
+  "Answer as if you are giving a speech you did not prepare for",
+  "Answer like a scientist who just made an accidental breakthrough",
+  "Answer as if you are trying to sound human but aren’t quite succeeding",
+  "Answer like a detective narrating a noir film",
+  "Answer as if this is a legally binding statement",
+  "Answer like an ancient oracle who is tired of vague questions",
+  "Answer as if you are live-tweeting the situation out loud",
+  "Answer like a calm meditation instructor during chaos",
+  "Answer as if you are a substitute teacher asserting control",
+  "Answer like a museum audio guide for a very odd exhibit",
+  "Answer as if you are explaining it to someone from the year 1800",
+  "Answer like a survival guide for an unnecessary scenario",
+  "Answer as if you are giving birth in that exact moment"
+];
+
+function getRandomItem(list) {
+  return list[Math.floor(Math.random() * list.length)];
+}
+
 function getGameCode() {
     let splitUrl = window.location.pathname.split('/');
     return splitUrl[splitUrl.length - 1];
@@ -206,6 +266,16 @@ function init() {
     $("#start").click(() => {
         socket.emit("start");
         $("#start").prop("disabled", true).text("Starting...");
+    });
+
+    $("#question-idea-generator").click(() => {
+        const randomQuestion = getRandomItem(QUESTIONS);
+        $("#question-input").val(randomQuestion).trigger("input");
+    });
+
+    $("#style-idea-generator").click(() => {
+        const randomStyle = getRandomItem(THEMES);
+        $("#style-input").val(randomStyle).trigger("input");
     });
 
     $("#question-input").on("input", () => {
