@@ -32,7 +32,7 @@ Your mission:
 15. TRY TO SAY SOMETHING UNEXPECTED OR SURPRISING. DO NOT GIVE GENERIC RESPONSES.
 16. HAVE FUN with this. Give mildly joking answers where people can find humor if they look close enough. REALLY ROLEPLAY into the theme as much as possible.
 17. NEVER go above 15 words - or what someone could reasonable respond with in 45 seconds.
-18. Don't be afraid to use text that isn't words. For example, if it says to respond like a dying whale, you can respond with "Wooooooaaaaaarghhh... *sputter*... blub blub..."
+18. Don't be afraid to use text that isn't words IF THE THEME OR QUESTION CALLS FOR IT. For example, if it says to respond like a dying whale, you can respond with "Wooooooaaaaaarghhh... *sputter*... blub blub..." Don't do this willy nilly, though.
 
 EXAMPLE:
 Answer the following question: What sounds harmless but actually isn’t?

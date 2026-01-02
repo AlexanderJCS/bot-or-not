@@ -2,6 +2,8 @@ import os
 import random
 from typing import Sized
 from enum import Enum
+
+import google.genai.errors
 from bidict import bidict
 
 import flask_socketio as sio
@@ -18,8 +20,6 @@ from strutils import truncate
 
 load_dotenv()
 
-client = genai.Client(api_key=os.getenv("GEMINI_KEY"))
-
 
 class GameState(Enum):
     WAITING = 0,
@@ -30,6 +30,10 @@ class GameState(Enum):
 
 class Game:
     def __init__(self, game_code: str):
+        self.api_key_names = ["GEMINI_KEY", "GEMINI_KEY_2"]
+        self.current_key_name = self.api_key_names[0]
+        self.client = genai.Client(api_key=os.getenv(self.current_key_name))
+        
         self.game_code = game_code
         
         self.players: list[str] = []
@@ -73,9 +77,22 @@ class Game:
         self.votes[sid] = vote
     
     def _gen_ai_response(self, question: str, style: str):
-        response = client.models.generate_content(
-            model="gemini-2.5-flash", contents=config.PROMPT.replace("{{QUESTION}}", question).replace("{{STYLE}}", style)
-        )
+        for _ in range(len(self.api_key_names)):
+            try:
+                response = self.client.models.generate_content(
+                    model="gemini-2.5-flash", contents=config.PROMPT.replace("{{QUESTION}}", question).replace("{{STYLE}}", style)
+                )
+            except google.genai.errors.ClientError:
+                print("Swapping API keys")
+                # Try again with a different API key
+                next_key_index = (self.api_key_names.index(self.current_key_name) + 1) % len(self.api_key_names)
+                self.client = genai.Client(api_key=os.getenv(self.api_key_names[next_key_index]))
+                continue
+            break
+        
+        else:  # All API keys failed
+            self.add_response("ai", "AI failed to generate a response")
+            return
         
         self.add_response("ai", response.text)
     
